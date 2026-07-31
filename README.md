@@ -62,7 +62,7 @@ namespace MyWebApi.Models
 ## 🚀 How to Run This Project Local
 
 ### Prerequisites
-* [.NET SDK](https://dotnet.microsoft.com/download) (Version 8.0 or later recommended)
+* [.NET SDK](https://dotnet.microsoft.com/download) (Version 11.0 or later recommended)
 * [Visual Studio 2026](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
 
 ### Steps to Run
