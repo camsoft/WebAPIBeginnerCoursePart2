@@ -65,7 +65,14 @@ namespace MyWebApi.Models
 * [.NET SDK](https://dotnet.microsoft.com/download) (Version 11.0 or later recommended)
 * [Visual Studio 2026](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
 
-### Steps to Run
+### Steps to Run using Visual Studio
+1. Clone this repository to your local machine.
+2. Open the solution file (`.sln`) in Visual Studio.
+3. Set the startup project to the Web API project (if multiple projects exist).
+4. Press `F5` or click the "Run" button to start the application.
+5. Open your browser and navigate to the local Swagger URL displayed in your console (typically `https://localhost:7xxx/swagger`) to test the endpoints live!
+
+### Steps to Run usin CLI (Command Line Interface)
 1. Clone this repository to your local machine.
 2. Open your terminal in the root folder containing the `.csproj` file.
 3. Run the application using the dotnet CLI:
