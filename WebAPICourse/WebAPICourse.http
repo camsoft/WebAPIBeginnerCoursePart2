@@ -1,0 +1,11 @@
+@WebAPICourse_HostAddress = http://localhost:5201
+
+GET {{WebAPICourse_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+
+GET {{WebAPICourse_HostAddress}}/products/
+Accept: application/json
+
+###
