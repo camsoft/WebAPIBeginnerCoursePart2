@@ -12,30 +12,69 @@ namespace WebAPICourse.Controllers
     {
         private readonly IProductService _productService;
 
-        // The Controller layer asks the Service layer to process requests
         public ProductsController(IProductService productService)
         {
             _productService = productService;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Product>> Get()
+        public async Task<IActionResult> GetAll()
         {
-            var products = _productService.GetAvailableProducts();
-            return Ok(products); // Returns HTTP 200 OK
+            var products = await _productService.GetAllProductsAsync();
+            return Ok(products);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var product = await _productService.GetProductByIdAsync(id);
+
+            if (product is null)
+            {
+                return NotFound($"Product with ID {id} was not found.");
+            }
+
+            return Ok(product);
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Product product)
+        public async Task<IActionResult> Create([FromBody] Product product)
         {
-            var isCreated = _productService.CreateProduct(product);
+            var result = await _productService.CreateProductAsync(product);
 
-            if (!isCreated)
+            if (!result.Success)
             {
-                return BadRequest("Invalid product data. Price must be greater than zero."); // Returns HTTP 400
+                return BadRequest(result.ErrorMessage);
             }
 
-            return StatusCode(201, product); // Returns HTTP 201 Created
+            return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result.Data);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Product product)
+        {
+            var result = await _productService.UpdateProductAsync(id, product);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.ErrorMessage);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted = await _productService.DeleteProductAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound($"Product with ID {id} was not found.");
+            }
+
+            return NoContent();
+        }
+
     }
 }

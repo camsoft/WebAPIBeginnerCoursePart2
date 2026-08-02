@@ -35,7 +35,7 @@ Create a folder named `Models` in the root of your project and add the following
 
 ```csharp
 // Models/Product.cs
-namespace MyWebApi.Models
+namespace WebAPICourse.Models
 {
     public class Product
     {
@@ -50,9 +50,19 @@ namespace MyWebApi.Models
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Description of the product
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
         /// Product price. Must be greater than zero.
         /// </summary>
         public decimal Price { get; set; }
+
+        /// <summary>
+        /// Quantity of the product currently in stock
+        /// </summary>
+        public int StockQuantity { get; set; }
     }
 }
 ```
