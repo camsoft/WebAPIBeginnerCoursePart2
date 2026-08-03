@@ -1,70 +1,83 @@
-﻿using WebAPICourse.Models;
-using WebAPICourse.Repositories;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.EntityFrameworkCore;
+using WebAPICourse.Data;
+using WebAPICourse.Models;
 
 namespace WebAPICourse.Repositories
 {
     // Repositories/ProductRepository.cs
+    //
+    // This repository now talks to a real SQL Server database via EF Core's AppDbContext,
+    // instead of an in-memory List<Product>. Notice the shape of the interface hasn't changed -
+    // that's the benefit of the Repository pattern: the Service/Controller layers don't need
+    // to know or care that the data source changed.
     public class ProductRepository : IProductRepository
     {
-        // A simple mock database for beginner demonstration
-        private readonly List<Product> _products = new()
-        {
-            new Product { Id = 1, Name = "Wireless Mouse", Description = "Ergonomic wireless mouse", Price = 24.99m, StockQuantity = 150 },
-            new Product { Id = 2, Name = "Mechanical Keyboard", Description = "RGB backlit mechanical keyboard", Price = 89.99m, StockQuantity = 75 },
-            new Product { Id = 3, Name = "USB-C Hub", Description = "7-in-1 USB-C hub", Price = 39.99m, StockQuantity = 200 }
-        };
+        private readonly AppDbContext _context;
 
-        private int _nextId = 4;
-
-        public Task<IEnumerable<Product>> GetAllAsync()
+        // The DbContext is injected by the built-in dependency injection container.
+        // It's registered as "Scoped" in Program.cs, meaning one instance is created
+        // per HTTP request - this is important because DbContext is not thread-safe
+        // and is designed to be short-lived.
+        public ProductRepository(AppDbContext context)
         {
-            return Task.FromResult(_products.AsEnumerable());
+            _context = context;
         }
 
-        public Task<Product?> GetByIdAsync(int id)
+        public async Task<IEnumerable<Product>> GetAllAsync()
         {
-            var product = _products.FirstOrDefault(p => p.Id == id);
-            return Task.FromResult(product);
+            // ToListAsync() executes the query against the database asynchronously
+            // and materializes the results into a List<Product>.
+            return await _context.Products.ToListAsync();
         }
 
-        public Task<Product> CreateAsync(Product product)
+        public async Task<Product?> GetByIdAsync(int id)
         {
-            product.Id = _nextId++;
-            _products.Add(product);
-            return Task.FromResult(product);
+            // FindAsync looks up an entity by its primary key. EF Core will first check
+            // if the entity is already being tracked in memory before hitting the database.
+            return await _context.Products.FindAsync(id);
         }
 
-        public Task<bool> UpdateAsync(Product product)
+        public async Task<Product> CreateAsync(Product product)
         {
-            var existing = _products.FirstOrDefault(p => p.Id == product.Id);
+            // AddAsync stages the new entity for insertion; nothing is sent to the database
+            // until SaveChangesAsync is called. EF Core will populate product.Id automatically
+            // once saved, because Id is configured as the primary key (auto-increment by default).
+            await _context.Products.AddAsync(product);
+            await _context.SaveChangesAsync();
+            return product;
+        }
+
+        public async Task<bool> UpdateAsync(Product product)
+        {
+            var existing = await _context.Products.FindAsync(product.Id);
             if (existing is null)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
+            // Because "existing" is being tracked by the DbContext, changing its properties
+            // is enough - EF Core will detect the changes and generate the correct UPDATE
+            // statement when SaveChangesAsync is called.
             existing.Name = product.Name;
             existing.Description = product.Description;
             existing.Price = product.Price;
             existing.StockQuantity = product.StockQuantity;
 
-            return Task.FromResult(true);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var existing = _products.FirstOrDefault(p => p.Id == id);
+            var existing = await _context.Products.FindAsync(id);
             if (existing is null)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
-            _products.Remove(existing);
-            return Task.FromResult(true);
+            _context.Products.Remove(existing);
+            await _context.SaveChangesAsync();
+            return true;
         }
-
-
     }
 }
